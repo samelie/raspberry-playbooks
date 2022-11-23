@@ -1,12 +1,7 @@
 - name: "Download & Install FFMPEG"
   become: True
-  get_url:
-    url: https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.4.1/ffmpeg-4.4.1-linux-armel-32.zip
-    dest: /home/pi/ffmpeg.zip
-
-# - name: Extract archive
-#   become: True
-#   unarchive:
-#     src: ~/ffmpeg.zip
-#     dest: /usr/local/bin/ffmpeg
-#     mode: a+rx
+  unarchive:
+    src:  https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.4.1/ffmpeg-4.4.1-linux-armel-32.zip
+    dest: /usr/local/bin
+    remote_src: yes
+    mode: a+rx

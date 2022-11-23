@@ -1,0 +1,7 @@
+- name: "Download & Install media players"
+  become: True
+  apt:
+    update_cache: true
+    name:
+      - omxplayer
+      - mpv
