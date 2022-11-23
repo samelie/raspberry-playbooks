@@ -1,0 +1,17 @@
+#!/usr/bin/env ansible-playbook -i hosts --become -c paramiko
+---
+
+
+- name: Ansible Playbook for reproducibly configuring my Raspberry Pi
+  hosts: pis
+  # roles:
+  #   - pi
+  remote_user: pi
+
+  tasks:
+    - name: Init Setup
+      include: tasks/init.yml
+    - name: yt-dlp
+      include: tasks/yt-dlp.yml
+    - name: ffmpeg
+      include: tasks/ffmpeg.yml

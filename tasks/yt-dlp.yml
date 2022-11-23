@@ -1,0 +1,7 @@
+- name: "Download & Install YT-DLP"
+  become: True
+  get_url:
+    url: https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp
+    dest: /usr/local/bin/yt-dlp
+    mode: a+rx
+
