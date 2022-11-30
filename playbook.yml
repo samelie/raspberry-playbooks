@@ -15,3 +15,5 @@
       include: tasks/yt-dlp.yml
     - name: ffmpeg
       include: tasks/ffmpeg.yml
+    - name: omx
+      include: tasks/omx.yml
