@@ -28,7 +28,9 @@ Configure with `Imager` [source](https://stackoverflow.com/questions/71804429/ra
 
 ## Video
 
-- cvlc  `"$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=5DAH5GNjRAQ)"`
+cvlc is prefered
+
+- cvlc --no-audio --rate 2 `"$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=5DAH5GNjRAQ)"`
 - 4:3
   - `omxplayer --display 3 "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=NEu3ZWjzHD8)"`
 
@@ -49,6 +51,8 @@ Configure with `Imager` [source](https://stackoverflow.com/questions/71804429/ra
   ```
   sudo apt install -y vlc
   ```
+
+  `
 
 ​		`cvlc -h`
 

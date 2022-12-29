@@ -9,8 +9,8 @@
   remote_user: pi
 
   tasks:
-    - name: Init Setup
-      include: tasks/init.yml
+    - name: update-upgrade Setup
+      include: tasks/update-upgrade.yml
     - name: yt-dlp
       include: tasks/yt-dlp.yml
     - name: ffmpeg
