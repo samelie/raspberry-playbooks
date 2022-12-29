@@ -7,8 +7,6 @@ Configure with `Imager` [source](https://stackoverflow.com/questions/71804429/ra
 - Physcial TV pins on Zero are very fussy!
 - [Stretch Img](http://debian.rutgers.edu/raspbian_images/raspberrypi/images/raspbian/2019-04-08-raspbian-stretch/) is prefered for the 2017 Zero models. Jessie had problems with inital ssh and Buster has kernal issues with composite.
 
-
-
 ## Ansible
 
 1. Config `ansible-playbook -i inventory/hosts config.yml`
@@ -36,6 +34,10 @@ cvlc is prefered
 
 ### Notes
 
+Issues with composite video
+
+- https://www.reddit.com/r/raspberry_pi/comments/uup5jl/switching_composite_video_tv_pin_onoff_on_pi_zero/
+
 - Update & upgrade
 
 - Yt-dlp
@@ -54,7 +56,7 @@ cvlc is prefered
 
   `
 
-​		`cvlc -h`
+​ `cvlc -h`
 
 - mpv
 

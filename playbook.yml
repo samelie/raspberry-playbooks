@@ -1,7 +1,5 @@
 #!/usr/bin/env ansible-playbook -i hosts --become -c paramiko
 ---
-
-
 - name: Ansible Playbook for reproducibly configuring my Raspberry Pi
   hosts: pis
   # roles:
