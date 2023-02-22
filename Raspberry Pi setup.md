@@ -33,7 +33,6 @@
 
    1. `ansible-playbook -i inventory/hosts playbook.yml`
 
-
 ### :warning: Warnings
 
 - Physcial TV pins on Zero are very fussy!
@@ -41,68 +40,29 @@
 
 ## Ansible
 
-1. Config `ansible-playbook -i inventory/hosts config-playbook.yml`
-2. Installs `ansible-playbook -i inventory/hosts playbook.yml`
+:information_source: Always add! `ssh-add ~/.ssh/pi`
+
+1. Config - run this once. `ansible-playbook -i inventory/hosts config-playbook.yml`
+2. Installs - Run to get updates `ansible-playbook -i inventory/hosts playbook.yml`
+
+**Known issue:**
+
+- Possibly not re-installing yt-dlp and getting new version
 
 ### commands
 
 `ansible all -i inventory/hosts -b  -a "shutdown -h now"`
 
-## OS
-
-### jessie
-
-- [Issue](https://raspberrypi.stackexchange.com/questions/111236/raspberry-pi-imager-says-input-file-is-not-a-valid-disk-image) with Imager. [Jessie](http://downloads.raspberrypi.org/raspbian/images/raspbian-2017-04-10/)
-- [Special setup](https://www.losant.com/blog/getting-started-with-the-raspberry-pi-zero-w-without-a-monitor)
-- After flash: ` touch /Volumes/boot/ssh && cp  raspberry_boot/wpa_supplicant.conf /Volumes/boot`
-
 ## Video
 
-cvlc is prefered
+### Stream iPhone to Rasperry
 
-5hr Birds:
-
-`cvlc --no-audio --rate 3 "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=du5QtndmeCQ)"`
-
-`cvlc --no-audio --rate 2 "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=5DAH5GNjRAQ)"`
-
-- 4:3
-  - `omxplayer --display 3 "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=NEu3ZWjzHD8)"`
+- DroidCam:
+  - https://apps.apple.com/us/app/droidcam-webcam-obs-camera/id1510258102
+  - `cvlc --no-audio --mjpeg-fps=30  --crop=4:3 "http://192.168.50.188:4747/video"`
 
 ### ad-hoc commands
 
 Shutdown:
 
 `ansible pis -i inventory/hosts -m shell  -a "shutdown -h now" --become`
-
-### Notes
-
-Issues with composite video
-
-- https://www.reddit.com/r/raspberry_pi/comments/uup5jl/switching_composite_video_tv_pin_onoff_on_pi_zero/
-
-- Update & upgrade
-
-- Yt-dlp
-
-  - https://lindevs.com/install-yt-dlp-on-raspberry-pi
-
-- ffmpeg
-
-  - https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.4.1/ffmpeg-4.4.1-linux-armel-32.zip
-
-- vlc
-
-  ```
-  sudo apt install -y vlc
-  ```
-
-  `
-
- `cvlc -h`
-
-- mpv
-
-  - ```
-    apt-get install mpv
-    ```

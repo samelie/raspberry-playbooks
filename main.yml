@@ -1,14 +1,14 @@
-#!/usr/bin/env ansible-playbook -i hosts --become -c paramiko
----
 - name: Ansible Playbook for reproducibly configuring my Raspberry Pi
   hosts: pis
-  # roles:
-  #   - pi
   remote_user: pi
-
+  vars:
+    - youtubedl_executable_path: "/usr/local/bin/youtube-dl"
+    - youtubedl_update: true
   tasks:
     - name: update-upgrade Setup
       include: tasks/update-upgrade.yml
+    - name: youtube-dl
+      include: tasks/youtube-dl.yml
     - name: yt-dlp
       include: tasks/yt-dlp.yml
     - name: ffmpeg
