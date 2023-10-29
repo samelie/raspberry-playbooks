@@ -1,0 +1,6 @@
+- name: "Download & Install tmux"
+  become: True
+  apt:
+    update_cache: true
+    name:
+      - tmux

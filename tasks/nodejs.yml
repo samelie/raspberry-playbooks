@@ -1,0 +1,12 @@
+# https://techviewleo.com/install-node-js-on-debian-12-bookworm/
+- name: "Download & Install nodejs"
+  become: True
+  shell: |
+    apt purge --autoremove nodejs npm
+    wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh|bash
+    source ~/.bashrc
+    nvm -v
+    nvm install v18
+    nvm alias default v18
+  args:
+    executable: /bin/bash

@@ -3,7 +3,6 @@
   apt:
     update_cache: true
     name:
-      - omxplayer
-      - mpv
       - vlc
       - streamlink
+      - software-properties-common
