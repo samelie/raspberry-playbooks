@@ -1,0 +1,4 @@
+roles:
+  - name: markosamuli.pyenv
+    src: https://github.com/markosamuli/ansible-pyenv
+    version: v6.2.0

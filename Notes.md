@@ -12,13 +12,13 @@ cvlc is prefered
 
 Live video 4:3
 
-`cvlc --no-audio --loop --repeat --crop=4:3  "$(yt-dlp -g https://www.youtube.com/watch?v=2pO-qXoqBxc)"`
+`cvlc --no-audio --loop --repeat --crop=4:3  "$(yt-dlp -f 18 -g https://www.youtube.com/watch?v=2pO-qXoqBxc)"`
 
 5hr Birds:
 
 `cvlc --no-audio --rate 3 "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=du5QtndmeCQ)"`
 
-`cvlc --no-audio --rate 2 "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=5DAH5GNjRAQ)"`
+`cvlc --no-audio --rate 2 "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=5DAH5GNjRAQ | head -n 1)"`
 
 
 

@@ -1,0 +1,17 @@
+- name: "Download & Install log2ram deps"
+  become: True
+  apt:
+    update_cache: true
+    name:
+      - wget
+
+# https://github.com/arkq/bluez-alsa/wiki/Installation-from-source
+- name: "Download & Install log2ram"
+  become: True
+  shell: |
+    wget https://github.com/azlux/log2ram/archive/master.tar.gz -O log2ram.tar.gz
+    tar xf log2ram.tar.gz
+    cd log2ram-master
+    ./install.sh
+  args:
+    executable: /bin/bash

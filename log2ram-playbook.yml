@@ -1,0 +1,6 @@
+- name: Ansible Playbook for reproducibly configuring my Raspberry Pi
+  hosts: pis
+  remote_user: pi
+  tasks:
+    - name: log2ram
+      include: tasks/log2ram.yml

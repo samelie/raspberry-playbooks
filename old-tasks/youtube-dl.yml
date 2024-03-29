@@ -1,3 +1,4 @@
+# DEPRECATED USE yt-dlp
 ---
 - name: Check if youtube-dl is already installed
   stat:

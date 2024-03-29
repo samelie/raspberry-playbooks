@@ -11,15 +11,15 @@
       include: tasks/update-upgrade.yml
     - name: yt-dlp
       include: tasks/yt-dlp.yml
-    - name: ffmpeg
-      include: tasks/ffmpeg.yml
+    # - name: ffmpeg
+    #   include: tasks/ffmpeg.yml
     - name: media-players
       include: tasks/media-players.yml
     - name: tmux
       include: tasks/tmux.yml
     - name: python
       include: tasks/pyenv-python.yml
-    - name: nodejs
-      include: tasks/nodejs.yml
+    # - name: nodejs
+    #   include: tasks/nodejs.yml
     - name: log2ram
       include: tasks/log2ram.yml

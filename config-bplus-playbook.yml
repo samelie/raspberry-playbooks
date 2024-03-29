@@ -79,22 +79,22 @@
       #shell: "raspi-config nonint do_wifi_ssid_passphrase {{ SSID }} {{ PASSPHRASE }}"
 
     #N3 Network interface names
-    - name: Get network names status
-      shell: "raspi-config nonint get_net_names"
-      register: pi_netnames
-      changed_when: False
+    # - name: Get network names status
+    #   shell: "raspi-config nonint get_net_names"
+    #   register: pi_netnames
+    #   changed_when: False
 
-    - name: Print current network names status
-      debug:
-        msg: "Current network names status: {{ pi_netnames.stdout }}"
+    # - name: Print current network names status
+    #   debug:
+    #     msg: "Current network names status: {{ pi_netnames.stdout }}"
 
-    - name: Enable network names
-      shell: "raspi-config nonint do_net_names 0"
-      when: (NETNAMES == True) and (pi_netnames.stdout != '0')
+    # - name: Enable network names
+    #   shell: "raspi-config nonint do_net_names 0"
+    #   when: (NETNAMES == True) and (pi_netnames.stdout != '0')
 
-    - name: Disable network names
-      shell: "raspi-config nonint do_net_names 1"
-      when: (NETNAMES == False) and (pi_netnames.stdout != '1')
+    # - name: Disable network names
+    #   shell: "raspi-config nonint do_net_names 1"
+    #   when: (NETNAMES == False) and (pi_netnames.stdout != '1')
 
 #3 Boot Options
 
@@ -122,14 +122,14 @@
       shell: "raspi-config nonint do_boot_behaviour {{ BOOTBEHAVIOUR }}"
 
     #B2 Wait for Network at Boot
-    - name: Get boot wait for network status
-      shell: "raspi-config nonint get_boot_wait"
-      register: boot_wait
-      changed_when: False
+    # - name: Get boot wait for network status
+    #   shell: "raspi-config nonint get_boot_wait"
+    #   register: boot_wait
+    #   changed_when: False
 
-    - name: Print boot wait for network status
-      debug:
-        msg: "Boot wait is: {{ boot_wait.stdout }}"
+    # - name: Print boot wait for network status
+    #   debug:
+    #     msg: "Boot wait is: {{ boot_wait.stdout }}"
 
       #- name: Set boot wait network status
       #shell: "raspi-config nonint do_boot_wait {{ BOOTWAIT }}"
@@ -401,8 +401,8 @@
       debug:
         msg: "Current GPU memory split: {{ gpu_mem.stdout }} - {{ gpu_mem_256.stdout }} - {{ gpu_mem_512.stdout }} - {{ gpu_mem_1k.stdout }}"
 
-    - name: Set GPU memory split
-      shell: "raspi-config nonint do_memory_split {{ MEMSPLIT }}"
+    # - name: Set GPU memory split
+    #   shell: "raspi-config nonint do_memory_split {{ MEMSPLIT }}"
       #when: gpu_mem.stdout != MEMSPLIT
 
     #A4 Audio
@@ -429,42 +429,22 @@
       #shell: "raspi-config nonint do_resolution {{ HDMI_GROUP }} {{ HDMI_MOD }}"
 
     #A6 Pixel Doubling
-    - name: Get pixel doubling
-      shell: "raspi-config nonint get_pixdub"
-      register: pixdub_status
-      changed_when: False
+    # - name: Get pixel doubling
+    #   shell: "raspi-config nonint get_pixdub"
+    #   register: pixdub_status
+    #   changed_when: False
 
-    - name: Print pixel doubling status
-      debug:
-        msg: "Pixel Doubling is: {{ pixdub_status.stdout }}"
+    # - name: Print pixel doubling status
+    #   debug:
+    #     msg: "Pixel Doubling is: {{ pixdub_status.stdout }}"
 
-    - name: Enable pixel doubling
-      shell: "raspi-config nonint do_pixdub 0"
-      when: (PIXDUB == True) and (pixdub_status.stdout != '0')
+    # - name: Enable pixel doubling
+    #   shell: "raspi-config nonint do_pixdub 0"
+    #   when: (PIXDUB == True) and (pixdub_status.stdout != '0')
 
-    - name: Disable pixel doubling
-      shell: "raspi-config nonint do_onewire 1"
-      when: (PIXDUB == False) and (pixdub_status.stdout != '1')
-
-########### Sam Analog TV
-
-    - name: hdmi_ignore_hotplug
-      lineinfile:
-        path: /boot/config.txt
-        line: "hdmi_ignore_hotplug=1"
-        create: yes
-
-    - name: SDTV Mode
-      lineinfile:
-        path: /boot/config.txt
-        line: "sdtv_mode=0"
-        create: yes
-
-    - name: SDTV Asppect
-      lineinfile:
-        path: /boot/config.txt
-        line: "sdtv_aspect=1"
-        create: yes
+    # - name: Disable pixel doubling
+    #   shell: "raspi-config nonint do_onewire 1"
+    #   when: (PIXDUB == False) and (pixdub_status.stdout != '1')
 
     #A7 GL Driver
     #- name: Set OpenGL desktop driver

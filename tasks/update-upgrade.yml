@@ -3,7 +3,29 @@
     apt:
       update_cache: true
       cache_valid_time: 3600
-  - name: Update all packages to the latest version
+      force_apt_get: yes
+
+# https://www.jeffgeerling.com/blog/2022/ansible-playbook-upgrade-ubuntudebian-servers-and-reboot-if-needed
+
+  - name: Perform a dist-upgrade
     become: True
     apt:
       upgrade: dist
+      update_cache: yes
+
+  - name: Check if a reboot is required.
+    become: True
+    stat:
+      path: /var/run/reboot-required
+      get_md5: no
+    register: reboot_required_file
+
+  - name: Reboot the server (if required).
+    become: True
+    reboot:
+    when: reboot_required_file.stat.exists == true
+
+  - name: Remove dependencies that are no longer required.
+    become: True
+    apt:
+      autoremove: yes

@@ -1,0 +1,31 @@
+# BEST to use Debian Bookworm or greater with Full + extras
+
+- name: "Download & Install Chromium deps"
+  become: True
+  apt:
+    update_cache: true
+    name:
+      - chromium-browser
+      - chromium-codecs-ffmpeg
+      - git
+      - automake
+      - build-essential
+      - libtool
+      - pkg-config
+      - python3-docutils
+      - libasound2-dev
+      - libbluetooth-dev
+      - libdbus-1-dev
+      - libglib2.0-dev
+      - libsbc-dev
+
+# https://github.com/arkq/bluez-alsa/wiki/Installation-from-source
+- name: "Download & Install Chromium (alsa)"
+  become: True
+  shell: |
+    git clone https://github.com/arkq/bluez-alsa.git
+    cd bluez-alsa
+    autoreconf --install --force
+
+  args:
+    executable: /bin/bash

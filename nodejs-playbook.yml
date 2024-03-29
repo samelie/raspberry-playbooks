@@ -1,0 +1,8 @@
+- name: Ansible Playbook for reproducibly configuring my Raspberry Pi
+  hosts: pis
+  remote_user: pi
+  vars:
+    - nodejs_version: 16.20.2
+  tasks:
+    - name: nodejs
+      include: tasks/nodejs.yml

@@ -1,32 +1,38 @@
-# - name: Add python repo
-#   become: True
-#   apt_repository:
-#     validate_certs: no
-#     repo: 'ppa:deadsnakes/ppa'
-#     state: present
-# - name: "Download & Install python"
-#   become: True
-#   apt:
-#     upgrade: true
-#     name:
-#       - python3
 
+# DONT USE  !!!!!!!! PYENV IS BETTER
 
 # https://cloudcone.com/docs/article/how-to-install-python-3-10-on-debian-11/
+- name: "Download & Install python deps"
+  become: True
+  apt:
+    update_cache: true
+    name:
+      - build-essential
+      - zlib1g-dev
+      - libncurses5-dev
+      - libgdbm-dev
+      - libnss3-dev
+      - libssl-dev
+      - libreadline-dev
+      - libffi-dev
+      - libsqlite3-dev
+      - wget
+      - git
+      - libbz2-dev
+
 - name: "Download & Install python"
   become: True
   shell: |
-    apt update
-    apt remove python
-    apt autoremove python
-    apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
     wget https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
     tar -xvf Python-3.10.0.tgz
+    rm Python-3.10.0.tgz
     cd Python-3.10.0
     ./configure --enable-optimizations
     make -j 1
     make altinstall
     python3.10 --version
     python3 --version
+    cd ../
+    rm -rf Python-3.10.0
   args:
     executable: /bin/bash
