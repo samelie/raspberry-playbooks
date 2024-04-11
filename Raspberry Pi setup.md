@@ -10,7 +10,7 @@
       ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
       update_config=1
       country=US
-      
+
       network={
           ssid="LO_BEHOLD"
           psk="little***ers"
@@ -40,29 +40,89 @@
 
 ## Ansible
 
-:information_source: Always add! `ssh-add ~/.ssh/pi`
+`ssh-add ~/.ssh/pi`
 
-1. Config - run this once. `ansible-playbook -i inventory/hosts config-playbook.yml`
-2. Installs - Run to get updates `ansible-playbook -i inventory/hosts playbook.yml`
-
-**Known issue:**
-
-- Possibly not re-installing yt-dlp and getting new version
+1. Config `ansible-playbook -i inventory/hosts config-playbook.yml`
+2. Installs `ansible-playbook -i inventory/hosts playbook.yml`
 
 ### commands
 
 `ansible all -i inventory/hosts -b  -a "shutdown -h now"`
 
+## OS
+
+### jessie
+
+- [Issue](https://raspberrypi.stackexchange.com/questions/111236/raspberry-pi-imager-says-input-file-is-not-a-valid-disk-image) with Imager. [Jessie](http://downloads.raspberrypi.org/raspbian/images/raspbian-2017-04-10/)
+- [Special setup](https://www.losant.com/blog/getting-started-with-the-raspberry-pi-zero-w-without-a-monitor)
+- After flash: ` touch /Volumes/boot/ssh && cp  raspberry_boot/wpa_supplicant.conf /Volumes/boot`
+
 ## Video
 
-### Stream iPhone to Rasperry
+cvlc is prefered
 
-- DroidCam:
-  - https://apps.apple.com/us/app/droidcam-webcam-obs-camera/id1510258102
-  - `cvlc --no-audio --mjpeg-fps=30  --crop=4:3 "http://192.168.50.188:4747/video"`
+Live video 4:3
+
+`cvlc --no-audio --crop=4:3  "$(yt-dlp -g https://www.youtube.com/watch?v=2pO-qXoqBxc)"`
+
+5hr Birds:
+
+`cvlc --no-audio --rate 3 --crop=4:3  "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=du5QtndmeCQ)"`
+
+`cvlc --no-audio --rate 2 --crop=4:3  "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=5DAH5GNjRAQ)"`
+
+- 4:3
+  - `omxplayer --display 3 "$(yt-dlp -g -f 18 https://www.youtube.com/watch?v=NEu3ZWjzHD8)"`
 
 ### ad-hoc commands
 
 Shutdown:
 
 `ansible pis -i inventory/hosts -m shell  -a "shutdown -h now" --become`
+
+### Notes
+
+Always add!
+
+`ssh-add ~/.ssh/pi`
+
+Issues with composite video
+
+- https://www.reddit.com/r/raspberry_pi/comments/uup5jl/switching_composite_video_tv_pin_onoff_on_pi_zero/
+
+- Update & upgrade
+
+- Yt-dlp
+
+  - https://lindevs.com/install-yt-dlp-on-raspberry-pi
+
+- ffmpeg
+
+  - https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.4.1/ffmpeg-4.4.1-linux-armel-32.zip
+
+- vlc
+
+  ```
+  sudo apt install -y vlc
+  ```
+
+  `
+
+`cvlc -h`
+
+- mpv
+
+  - ```
+    apt-get install mpv
+    ```
+
+### cvlc video vilters
+
+Get the formats
+
+`yt-dlp -F https://www.youtube.com/live/U8kLr05i-p8`
+
+Sadly video filters do not work.
+`cvlc --no-audio --crop=4:3 --video-filter=adjust --saturation=0 --contrast=2 "$(yt-dlp -g -f 92 https://www.youtube.com/live/U8kLr05i-p8)" --codec avcodec,none`
+
+- [Source](https://forum.videolan.org/viewtopic.php?t=149455)

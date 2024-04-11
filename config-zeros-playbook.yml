@@ -6,6 +6,11 @@
 
   vars:
     REBOOT: True #Should i reboot at the end of this playbook?
+
+    # ON BOOKWORM ++ , this is the location
+    # CONFIG_PATH: "/boot/firmware/config.txt"
+
+    CONFIG_PATH: "/boot/config.txt"
     UPDATE: True
     # HOSTNAME: "picasa"
     MEMSPLIT: "128"
@@ -172,8 +177,8 @@
       debug:
         msg: "Wifi country is: {{ wifi_country.stdout }}"
 
-    #- name: Set WiFi country
-    #shell: "raspi-config nonint do_wifi_country {{ WIFI_COUNTRY }}"
+    - name: Set WiFi country
+      shell: "raspi-config nonint do_wifi_country {{ WIFI_COUNTRY }}"
 
 #5 Interfacing Options
 
@@ -334,7 +339,7 @@
 
     #Overclock
     - name: Get overclock
-      shell: "raspi-config nonint get_config_var arm_freq /boot/config.txt"
+      shell: "raspi-config nonint get_config_var arm_freq {{ CONFIG_PATH }}"
       register: pi_overclock
       changed_when: False
 
@@ -378,22 +383,22 @@
 
     #A3 Memory Split
     - name: Get current GPU memory split (1/4)
-      shell: "raspi-config nonint get_config_var gpu_mem /boot/config.txt"
+      shell: "raspi-config nonint get_config_var gpu_mem {{ CONFIG_PATH }}"
       register: gpu_mem
       changed_when: False
 
     - name: Get current GPU memory split 256 (2/4)
-      shell: "raspi-config nonint get_config_var gpu_mem_256 /boot/config.txt"
+      shell: "raspi-config nonint get_config_var gpu_mem_256 {{ CONFIG_PATH }}"
       register: gpu_mem_256
       changed_when: False
 
     - name: Get current GPU memory split 512 (3/4)
-      shell: "raspi-config nonint get_config_var gpu_mem_512 /boot/config.txt"
+      shell: "raspi-config nonint get_config_var gpu_mem_512 {{ CONFIG_PATH }}"
       register: gpu_mem_512
       changed_when: False
 
     - name: Get current GPU memory split 1024 (4/4)
-      shell: "raspi-config nonint get_config_var gpu_mem_1024 /boot/config.txt"
+      shell: "raspi-config nonint get_config_var gpu_mem_1024 {{ CONFIG_PATH }}"
       register: gpu_mem_1k
       changed_when: False
 
@@ -412,12 +417,12 @@
 
     #A5 Resolution
     - name: Get HDMI group
-      shell: "raspi-config nonint get_config_var hdmi_group /boot/config.txt"
+      shell: "raspi-config nonint get_config_var hdmi_group {{ CONFIG_PATH }}"
       register: hdmi_group
       changed_when: False
 
     - name: Get HDMI mode
-      shell: "raspi-config nonint get_config_var hdmi_mode /boot/config.txt"
+      shell: "raspi-config nonint get_config_var hdmi_mode {{ CONFIG_PATH }}"
       register: hdmi_mode
       changed_when: False
 
@@ -450,27 +455,40 @@
 
     - name: hdmi_ignore_hotplug
       lineinfile:
-        path: /boot/config.txt
+        path: "{{ CONFIG_PATH }}"
         line: "hdmi_ignore_hotplug=1"
         create: yes
 
     - name: SDTV Mode
       lineinfile:
-        path: /boot/config.txt
+        path: "{{ CONFIG_PATH }}"
         line: "sdtv_mode=0"
+        create: yes
+
+    - name: SDTV Out
+      lineinfile:
+        path: "{{ CONFIG_PATH }}"
+        line: "enable_tvout=1"
         create: yes
 
     - name: SDTV Asppect
       lineinfile:
-        path: /boot/config.txt
+        path: "{{ CONFIG_PATH }}"
         line: "sdtv_aspect=1"
         create: yes
 
   # VLC error fixed? No... :(  https://forums.raspberrypi.com/viewtopic.php?t=324835
-    - name: OpenGL
+
+    - name: SDTV Comp
       lineinfile:
-        path: /boot/config.txt
-        line: "dtoverlay=vc4-fkms-v3d"
+        path: "{{ CONFIG_PATH }}"
+        line: "dtoverlay=vc4-kms-v3d,composite"
+        create: yes
+
+    - name: SDTV Mode
+      lineinfile:
+        path: "{{ CONFIG_PATH }}"
+        line: "vc4.tv_norm=NTSC"
         create: yes
 
     #A7 GL Driver
