@@ -3,6 +3,8 @@
   apt:
     update_cache: true
     name:
-      - vlc
+      - aptitude
+      #     seems to be happy with rPI zero on Buster
+      # - vlc=3.0.17.4-0+deb10u2+rpt1
       - streamlink
       - software-properties-common

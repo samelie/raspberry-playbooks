@@ -1,0 +1,72 @@
+---
+- name: "Check if CVLC is already installed"
+  command: which cvlc
+  register: cvlc_check
+  ignore_errors: true
+  changed_when: false
+
+- name: "Download & Install CVLC deps"
+  become: true
+  apt:
+    update_cache: true
+    name:
+      - wget
+      - git
+      - g++
+      - make
+      - libtool
+      - automake
+      - autopoint
+      - pkg-config
+      - flex
+      - bison
+      - lua5.2
+  when: cvlc_check.rc != 0
+
+- name: "Add deb-src URIs to sources.list"
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/apt/sources.list
+    block: |
+      deb-src http://deb.debian.org/debian bullseye main
+      deb-src http://deb.debian.org/debian-security bullseye-security main
+      deb-src http://deb.debian.org/debian bullseye-updates main
+    state: present
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR VLC BUILD"
+  when: cvlc_check.rc != 0
+
+- name: "Update apt cache after adding sources"
+  become: true
+  apt:
+    update_cache: yes
+  when: cvlc_check.rc != 0
+
+- name: "Install VLC build dependencies"
+  become: true
+  apt:
+    state: build-dep
+    name: vlc
+  when: cvlc_check.rc != 0
+
+- name: "Create build directory"
+  file:
+    path: "/tmp/vlc-build"
+    state: directory
+    mode: '0755'
+  when: cvlc_check.rc != 0
+
+- name: "Download & Install CVLC"
+  become: true
+  shell: |
+    cd /tmp/vlc-build
+    wget http://download.videolan.org/pub/videolan/vlc/3.0.17.4/vlc-3.0.17.4.tar.xz
+    tar xf vlc-3.0.17.4.tar.xz
+    cd vlc-3.0.17.4
+    ./bootstrap
+    ./configure
+    make -j$(nproc)
+    make install
+  args:
+    executable: /bin/bash
+    creates: /usr/local/bin/vlc
+  when: cvlc_check.rc != 0

@@ -1,0 +1,18 @@
+[Unit]
+Description=SABnzbd Binary Newsreader
+After=network.target
+
+[Service]
+Type=simple
+User=sabnzbd
+Group=sabnzbd
+WorkingDirectory=/opt/sabnzbd
+Environment="PYTHONPATH=/opt/sabnzbd"
+ExecStart=/opt/sabnzbd/venv/bin/python3 /opt/sabnzbd/SABnzbd.py --server 0.0.0.0:8080 --browser 0 --logging 0
+#StandardOutput=append:/var/log/sabnzbd/sabnzbd.log
+#StandardError=append:/var/log/sabnzbd/sabnzbd.error.log
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,17 +1,72 @@
 - name: "Download & Install log2ram deps"
-  become: True
+  become: true
   apt:
     update_cache: true
     name:
       - wget
+    cache_valid_time: 3600  # Consider cache valid for 1 hour
+  register: apt_result
+  ignore_errors: true
 
-# https://github.com/arkq/bluez-alsa/wiki/Installation-from-source
-- name: "Download & Install log2ram"
-  become: True
+- name: "Debug apt update failure"
+  debug:
+    var: apt_result
+  when: apt_result is failed
+
+- name: "Force clean apt lists"
+  become: true
   shell: |
-    wget https://github.com/azlux/log2ram/archive/master.tar.gz -O log2ram.tar.gz
+    rm -rf /var/lib/apt/lists/*
+    mkdir -p /var/lib/apt/lists/partial
+  when: apt_result is failed
+
+- name: "Retry apt update"
+  become: true
+  apt:
+    update_cache: true
+    name:
+      - wget
+  when: apt_result is failed
+
+- name: "Ensure DNS resolution is working"
+  become: true
+  lineinfile:
+    path: /etc/resolv.conf
+    line: "nameserver 8.8.8.8"
+    insertbefore: BOF
+
+- name: "Ensure wget is installed"
+  become: true
+  apt:
+    name: wget
+    state: present
+
+- name: "Download & Install log2ram"
+  become: true
+  shell: |
+    # Don't fail if service doesn't exist yet
+    systemctl stop log2ram || true
+
+    # Clean up any previous attempts
+    rm -rf /tmp/log2ram.tar.gz /tmp/log2ram-1.6.1
+
+    # Download with retry
+    wget --tries=3 --retry-connrefused https://github.com/azlux/log2ram/archive/refs/tags/1.6.1.tar.gz -O /tmp/log2ram.tar.gz
+
+    cd /tmp
     tar xf log2ram.tar.gz
-    cd log2ram-master
-    ./install.sh
+    cd log2ram-1.6.1
+    bash ./install.sh
   args:
     executable: /bin/bash
+  register: install_result
+  failed_when: |
+    install_result.rc != 0 and
+    "already installed" not in install_result.stderr
+
+- name: "Ensure log2ram service is enabled and started"
+  become: true
+  systemd:
+    name: log2ram
+    state: started
+    enabled: yes

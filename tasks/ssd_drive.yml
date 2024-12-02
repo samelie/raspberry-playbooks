@@ -1,0 +1,122 @@
+---
+- name: Debug device status
+  debug:
+    msg: "Checking device {{ ssd_device }}"
+
+- name: Check if mount point exists
+  stat:
+    path: "{{ mount_point }}"
+  register: mount_stat
+
+- name: Force unmount any existing mounts
+  shell: "umount {{ ssd_device }}* || true"
+  ignore_errors: true
+  when: force_format | bool
+
+- name: Force unmount mount point if used
+  shell: "umount {{ mount_point }} || true"
+  ignore_errors: true
+  when: mount_stat.stat.exists
+
+- name: Stop any services using the device
+  shell: "fuser -k {{ ssd_device }}* || true"
+  ignore_errors: true
+  when: force_format | bool
+
+- name: Ensure device is not busy
+  shell: "sync"
+  when: force_format | bool
+
+- name: Clear partition table signatures (forced)
+  command: "wipefs -af {{ ssd_device }}"
+  when: force_format | bool
+
+- name: Clear first few megabytes of device (forced)
+  command: "dd if=/dev/zero of={{ ssd_device }} bs=1M count=10"
+  when: force_format | bool
+
+- name: Create new GPT partition table (forced)
+  command: "parted -s {{ ssd_device }} mklabel gpt"
+  when: force_format | bool
+
+- name: Create primary partition using MiB units (forced)
+  command: "parted -s {{ ssd_device }} mkpart primary 1MiB 100%"
+  when: force_format | bool
+
+- name: Force kernel to reread partition table
+  shell: |
+    sync
+    partprobe -s {{ ssd_device }}
+    udevadm settle
+  when: force_format | bool
+
+- name: Wait for partition device
+  wait_for:
+    path: "{{ ssd_device }}1"
+    timeout: 30
+  when: force_format | bool
+
+- name: Create filesystem (forced)
+  filesystem:
+    fstype: "{{ filesystem | default('ext4') }}"
+    dev: "{{ ssd_device }}1"
+    force: yes
+  when: force_format | bool
+
+- name: Create mount point
+  file:
+    path: "{{ mount_point }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ ssd_owner }}"
+    group: "{{ ssd_group }}"
+
+- name: Get UUID of partition
+  command: blkid -s UUID -o value {{ ssd_device }}1
+  register: device_uuid
+  changed_when: false
+  retries: 3
+  delay: 5
+  until: device_uuid.stdout != ""
+
+- name: Remove any existing fstab entries for mount point
+  lineinfile:
+    path: /etc/fstab
+    regexp: ".*{{ mount_point | regex_escape }}.*"
+    state: absent
+
+- name: Add fstab entry
+  mount:
+    path: "{{ mount_point }}"
+    src: "UUID={{ device_uuid.stdout }}"
+    fstype: "{{ filesystem | default('ext4') }}"
+    opts: "defaults,nofail"
+    state: present
+
+- name: Mount the drive
+  mount:
+    path: "{{ mount_point }}"
+    src: "UUID={{ device_uuid.stdout }}"
+    fstype: "{{ filesystem | default('ext4') }}"
+    state: mounted
+
+- name: Verify correct drive is mounted
+  shell: |
+    MOUNTED_DEVICE=$(findmnt -n -o SOURCE {{ mount_point }})
+    EXPECTED_DEVICE="{{ ssd_device }}1"
+    if [ "$MOUNTED_DEVICE" = "$EXPECTED_DEVICE" ]; then
+      echo "Correct device mounted: $MOUNTED_DEVICE"
+      exit 0
+    else
+      echo "Wrong device mounted"
+      echo "Found: $MOUNTED_DEVICE"
+      echo "Expected: $EXPECTED_DEVICE"
+      exit 1
+    fi
+  register: mount_verify
+  failed_when: mount_verify.rc != 0
+
+- name: Show mounted device info
+  debug:
+    msg: "Device {{ ssd_device }} successfully mounted at {{ mount_point }}"
+  when: mount_verify.rc == 0

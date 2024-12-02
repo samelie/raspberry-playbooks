@@ -7,19 +7,30 @@
     - pyenv_global: "{{ pyenv_python37_version }} system"
     - nodejs_version: 18.18.2
   tasks:
-    - name: update-upgrade Setup
-      include: tasks/update-upgrade.yml
+    # - name: update-upgrade Setup
+    #   include: tasks/update-upgrade.yml
     - name: yt-dlp
       include: tasks/yt-dlp.yml
+    - name: vlc
+      include: tasks/vlc.yml
     - name: media-players
       include: tasks/media-players.yml
-    - name: ffmpeg
-      include: tasks/ffmpeg.yml
-    - name: tmux
-      include: tasks/tmux.yml
-    - name: python
-      include: tasks/pyenv-python.yml
-    - name: nodejs
-      include: tasks/nodejs.yml
-    - name: log2ram
-      include: tasks/log2ram.yml
+    # - name: ffmpeg
+    #   include: tasks/ffmpeg.yml
+    # - name: tmux
+    #   include: tasks/tmux.yml
+    # - name: python
+    #   include: tasks/pyenv-python.yml
+      # Wasn't working on Zero
+    # - name: nodejs
+    #   include: tasks/nodejs.yml
+    # - name: log2ram
+    #   include: tasks/log2ram.yml
+    # - name: Reboot
+    #   become: True
+    #   shell: "sleep 1 && shutdown -r now +1"
+    #   async: 1
+    #   poll: 0
+    #   notify:
+    #     - wait-for-reboot
+    #   when: REBOOT == True

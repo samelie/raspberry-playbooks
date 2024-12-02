@@ -479,11 +479,11 @@
 
   # VLC error fixed? No... :(  https://forums.raspberrypi.com/viewtopic.php?t=324835
 
-    - name: SDTV Comp
-      lineinfile:
-        path: "{{ CONFIG_PATH }}"
-        line: "dtoverlay=vc4-kms-v3d,composite"
-        create: yes
+    # - name: SDTV Comp
+    #   lineinfile:
+    #     path: "{{ CONFIG_PATH }}"
+    #     line: "dtoverlay=vc4-kms-v3d,composite"
+    #     create: yes
 
     - name: SDTV Mode
       lineinfile:

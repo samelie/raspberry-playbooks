@@ -23,3 +23,11 @@
     #   include: tasks/nodejs.yml
     - name: log2ram
       include: tasks/log2ram.yml
+    - name: Reboot
+      become: True
+      shell: "sleep 1 && shutdown -r now +1"
+      async: 1
+      poll: 0
+      notify:
+        - wait-for-reboot
+      when: REBOOT == True
