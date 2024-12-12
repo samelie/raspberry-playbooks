@@ -1,0 +1,59 @@
+- name: Get current Plex version
+  shell: dpkg-query -W -f='${Version}' plexmediaserver || echo "none"
+  register: current_plex_version
+  changed_when: false
+
+- name: Add architecture support
+  command: dpkg --add-architecture {{ architecture }}
+  when: architecture != ansible_architecture
+  changed_when: false
+
+- name: Install required dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg2
+      - software-properties-common
+    state: present
+    update_cache: yes
+
+- name: Download Plex Media Server package
+  get_url:
+    url: "{{ plex_download_url }}"
+    dest: "/tmp/plexmediaserver_{{ architecture }}.deb"
+    mode: '0644'
+  register: plex_download
+
+- name: Stop Plex Media Server service before upgrade
+  systemd:
+    name: plexmediaserver
+    state: stopped
+  when: plex_download.changed
+
+- name: Install/Update Plex Media Server
+  apt:
+    deb: "/tmp/plexmediaserver_{{ architecture }}.deb"
+    state: present
+  register: plex_install
+
+- name: Start Plex Media Server service
+  systemd:
+    name: plexmediaserver
+    state: started
+    enabled: yes
+
+- name: Clean up downloaded package
+  file:
+    path: "/tmp/plexmediaserver_{{ architecture }}.deb"
+    state: absent
+
+- name: Create Plex media directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: plex
+    group: plex
+    mode: '0755'
+  with_items: "{{ media_directories }}"

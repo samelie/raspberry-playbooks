@@ -17,129 +17,137 @@
     filesystem: "ext4"
     force_format: false
     interactive: true
+    #plex
+    plex_version: "1.41.3.9292-bc7397402"
+    architecture: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' if ansible_architecture == 'aarch64' else ansible_architecture }}"
+    plex_download_url: "https://downloads.plex.tv/plex-media-server-new/{{ plex_version }}/debian/plexmediaserver_{{ plex_version }}_{{ architecture }}.deb"
+    media_directories:
+      - /mnt/external/complete
   tasks:
   #Update
     # System optimization
-    # - name: Disable unnecessary services
-    #   systemd:
-    #     name: "{{ item }}"
-    #     state: stopped
-    #     enabled: false
-    #   with_items:
-    #     - bluetooth
-    #     - avahi-daemon
-    #     - triggerhappy
-    #     - dphys-swapfile
+    - name: Disable unnecessary services
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      with_items:
+        - bluetooth
+        - avahi-daemon
+        - triggerhappy
+        - dphys-swapfile
 
 
-    # # Privacy enhancements - Updated DNS configuration for NetworkManager
-    # - name: Install NetworkManager
-    #   apt:
-    #     name: network-manager
-    #     state: present
+    # Privacy enhancements - Updated DNS configuration for NetworkManager
+    - name: Install NetworkManager
+      apt:
+        name: network-manager
+        state: present
 
-    # - name: Configure DNS servers in NetworkManager
-    #   copy:
-    #     content: |
-    #       [main]
-    #       dns=none
+    - name: Configure DNS servers in NetworkManager
+      copy:
+        content: |
+          [main]
+          dns=none
 
-    #       [global-dns]
-    #       servers=1.1.1.1,8.8.8.8
-    #     dest: /etc/NetworkManager/conf.d/dns-servers.conf
-    #     mode: '0644'
+          [global-dns]
+          servers=1.1.1.1,8.8.8.8
+        dest: /etc/NetworkManager/conf.d/dns-servers.conf
+        mode: '0644'
 
-    # - name: Restart NetworkManager
-    #   systemd:
-    #     name: NetworkManager
-    #     state: restarted
+    - name: Restart NetworkManager
+      systemd:
+        name: NetworkManager
+        state: restarted
 
-    # # WiFi optimization for 5GHz
-    # - name: Configure WiFi country and settings
-    #   copy:
-    #     content: |
-    #       [connection]
-    #       id=LO_BEHOLD_5G
-    #       type=wifi
+    # WiFi optimization for 5GHz
+    - name: Configure WiFi country and settings
+      copy:
+        content: |
+          [connection]
+          id=LO_BEHOLD_5G
+          type=wifi
 
-    #       [wifi]
-    #       band=a
-    #       mode=infrastructure
-    #       ssid=LO_BEHOLD_5G
+          [wifi]
+          band=a
+          mode=infrastructure
+          ssid=LO_BEHOLD_5G
 
-    #       [wifi-security]
-    #       key-mgmt=wpa-psk
-    #       psk=littlebrothers
+          [wifi-security]
+          key-mgmt=wpa-psk
+          psk=littlebrothers
 
-    #       [ipv4]
-    #       method=auto
+          [ipv4]
+          method=auto
 
-    #       [ipv6]
-    #       method=auto
-    #     dest: /etc/NetworkManager/system-connections/LO_BEHOLD_5G.nmconnection
-    #     mode: '0600'
+          [ipv6]
+          method=auto
+        dest: /etc/NetworkManager/system-connections/LO_BEHOLD_5G.nmconnection
+        mode: '0600'
 
-    # # Performance optimizations
-    # - name: Set CPU governor to performance
-    #   lineinfile:
-    #     path: /boot/config.txt
-    #     line: "force_turbo=1"
+    # Performance optimizations
+    - name: Set CPU governor to performance
+      lineinfile:
+        path: /boot/config.txt
+        line: "force_turbo=1"
 
-    # - name: Optimize SD card writes
-    #   blockinfile:
-    #     path: /etc/fstab
-    #     block: |
-    #       tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0
-    #       tmpfs /var/tmp tmpfs defaults,noatime,mode=1777 0 0
-    #       tmpfs /var/spool tmpfs defaults,noatime,mode=1777 0 0
-    #       tmpfs /var/log tmpfs defaults,noatime,mode=1777 0 0
+    - name: Optimize SD card writes
+      blockinfile:
+        path: /etc/fstab
+        block: |
+          tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0
+          tmpfs /var/tmp tmpfs defaults,noatime,mode=1777 0 0
+          tmpfs /var/spool tmpfs defaults,noatime,mode=1777 0 0
+          tmpfs /var/log tmpfs defaults,noatime,mode=1777 0 0
 
-    # - name: Configure system for reduced writes
-    #   sysctl:
-    #     name: "{{ item.key }}"
-    #     value: "{{ item.value }}"
-    #     state: present
-    #   with_items:
-    #     - { key: 'vm.swappiness', value: '10' }
-    #     - { key: 'vm.vfs_cache_pressure', value: '50' }
-    #     - { key: 'vm.dirty_background_ratio', value: '5' }
-    #     - { key: 'vm.dirty_ratio', value: '10' }
+    - name: Configure system for reduced writes
+      sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items:
+        - { key: 'vm.swappiness', value: '10' }
+        - { key: 'vm.vfs_cache_pressure', value: '50' }
+        - { key: 'vm.dirty_background_ratio', value: '5' }
+        - { key: 'vm.dirty_ratio', value: '10' }
 
-    # # Locale and timezone configuration
-    # - name: Set timezone
-    #   timezone:
-    #     name: "{{ timezone }}"
+    # Locale and timezone configuration
+    - name: Set timezone
+      timezone:
+        name: "{{ timezone }}"
 
-    # - name: Generate locale
-    #   locale_gen:
-    #     name: en_US.UTF-8
-    #     state: present
+    - name: Generate locale
+      locale_gen:
+        name: en_US.UTF-8
+        state: present
 
-    # # Security hardening
-    # - name: Configure SSH hardening
-    #   lineinfile:
-    #     path: /etc/ssh/sshd_config
-    #     line: "{{ item }}"
-    #   with_items:
-    #     - "PermitRootLogin no"
-    #     - "PasswordAuthentication no"
-    #     - "X11Forwarding no"
-    #     - "Protocol 2"
+    # Security hardening
+    - name: Configure SSH hardening
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        line: "{{ item }}"
+      with_items:
+        - "PermitRootLogin no"
+        - "PasswordAuthentication no"
+        - "X11Forwarding no"
+        - "Protocol 2"
 
-    # - name: Restart SSH service
-    #   service:
-    #     name: ssh
-    #     state: restarted
+    - name: Restart SSH service
+      service:
+        name: ssh
+        state: restarted
 
-    # - name: log2ram
-    #   include_tasks: tasks/log2ram.yml
-    # - name: yt-dlp
-    #   include_tasks: tasks/yt-dlp.yml
-    # - name: vlc
-    #   include_tasks: tasks/vlc.yml
-    # - name: media-players
-    #   include_tasks: tasks/media-players.yml
+    - name: log2ram
+      include_tasks: tasks/log2ram.yml
+    - name: yt-dlp
+      include_tasks: tasks/yt-dlp.yml
+    - name: vlc
+      include_tasks: tasks/vlc.yml
+    - name: media-players
+      include_tasks: tasks/media-players.yml
     - name: sabnzbd
       include_tasks: tasks/sabnzbd.yml
     - name: ssd_drive
       include_tasks: tasks/ssd_drive.yml
+    - name: plex
+      include_tasks: tasks/plex.yml
