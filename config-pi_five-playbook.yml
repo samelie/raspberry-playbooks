@@ -23,131 +23,184 @@
     plex_download_url: "https://downloads.plex.tv/plex-media-server-new/{{ plex_version }}/debian/plexmediaserver_{{ plex_version }}_{{ architecture }}.deb"
     media_directories:
       - /mnt/external/complete
+    #jellyfin
+    jellyfin_user: jellyfin
+    jellyfin_group: jellyfin
+    base_dir: /mnt/external/jellyfin
+    config_dir: "{{ base_dir }}/config"
+    media_dir: "{{ base_dir }}/media"
+    cache_dir: "{{ base_dir }}/cache"
+    metadata_dir: "{{ base_dir }}/metadata"
+    transcoding_dir: "{{ base_dir }}/transcoding"
+    config_file: "{{ config_dir }}/system.xml"
+    systemd_override_dir: "/etc/systemd/system/jellyfin.service.d"
+    configure_firewall: true
+    #smb
+    # Shield specific settings
+    smb_server: "192.168.50.233"  # Default network name for Shield Pro
+    smb_share: "T-FORCE USB drive"  # Default share name
+    smb_mount_point: "/mnt/shield"  # Local mount point
+
+    # Shield default credentials (should be customized)
+    smb_username: "stephletteandsamlette"  # Default Shield username
+    smb_password: "riggs-only-fahey"  # Shield typically doesn't require password by default
+
+    # System paths
+    credentials_path: "/root/.smbcredentials"
+    mount_unit_name: "mnt-shield.mount"
+
+     # Optional SMB mount options
+    smb_options:
+      - "vers=3.0"  # SMB version used by Shield
+      - "_netdev"
+      - "noserverino"  # Helps with compatibility
+      - "rw"  # Ensure read-write access
+      - "iocharset=utf8"  # Character encoding
+      - "file_mode=0777"  # Default file permissions
+      - "dir_mode=0777"  # Default directory permissions
+
   tasks:
-  #Update
-    # System optimization
-    - name: Disable unnecessary services
+    - name: apt
+      include_tasks: tasks/apt.yml
+
+  # Update
+    # # System optimization
+    # - name: Disable unnecessary services
+    #   systemd:
+    #     name: "{{ item }}"
+    #     state: stopped
+    #     enabled: false
+    #   with_items:
+    #     - bluetooth
+    #     - avahi-daemon
+    #     - triggerhappy
+    #     - dphys-swapfile
+
+
+    # # Privacy enhancements - Updated DNS configuration for NetworkManager
+    # - name: Install NetworkManager
+    #   apt:
+    #     name: network-manager
+    #     state: present
+
+    # - name: Configure DNS servers in NetworkManager
+    #   copy:
+    #     content: |
+    #       [main]
+    #       dns=none
+
+    #       [global-dns]
+    #       servers=1.1.1.1,8.8.8.8
+    #     dest: /etc/NetworkManager/conf.d/dns-servers.conf
+    #     mode: '0644'
+
+    # - name: Restart NetworkManager
+    #   systemd:
+    #     name: NetworkManager
+    #     state: restarted
+
+    # # WiFi optimization for 5GHz
+    # - name: Configure WiFi country and settings
+    #   copy:
+    #     content: |
+    #       [connection]
+    #       id=LO_BEHOLD_5G
+    #       type=wifi
+
+    #       [wifi]
+    #       band=a
+    #       mode=infrastructure
+    #       ssid=LO_BEHOLD_5G
+
+    #       [wifi-security]
+    #       key-mgmt=wpa-psk
+    #       psk=littlebrothers
+
+    #       [ipv4]
+    #       method=auto
+
+    #       [ipv6]
+    #       method=auto
+    #     dest: /etc/NetworkManager/system-connections/LO_BEHOLD_5G.nmconnection
+    #     mode: '0600'
+
+    # # Performance optimizations
+    # - name: Set CPU governor to performance
+    #   lineinfile:
+    #     path: /boot/config.txt
+    #     line: "force_turbo=1"
+
+    # - name: Optimize SD card writes
+    #   blockinfile:
+    #     path: /etc/fstab
+    #     block: |
+    #       tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0
+    #       tmpfs /var/tmp tmpfs defaults,noatime,mode=1777 0 0
+    #       tmpfs /var/spool tmpfs defaults,noatime,mode=1777 0 0
+    #       tmpfs /var/log tmpfs defaults,noatime,mode=1777 0 0
+
+    # - name: Configure system for reduced writes
+    #   sysctl:
+    #     name: "{{ item.key }}"
+    #     value: "{{ item.value }}"
+    #     state: present
+    #   with_items:
+    #     - { key: 'vm.swappiness', value: '10' }
+    #     - { key: 'vm.vfs_cache_pressure', value: '50' }
+    #     - { key: 'vm.dirty_background_ratio', value: '5' }
+    #     - { key: 'vm.dirty_ratio', value: '10' }
+
+    # # Locale and timezone configuration
+    # - name: Set timezone
+    #   timezone:
+    #     name: "{{ timezone }}"
+
+    # - name: Generate locale
+    #   locale_gen:
+    #     name: en_US.UTF-8
+    #     state: present
+
+    # # Security hardening
+    # - name: Configure SSH hardening
+    #   lineinfile:
+    #     path: /etc/ssh/sshd_config
+    #     line: "{{ item }}"
+    #   with_items:
+    #     - "PermitRootLogin no"
+    #     - "PasswordAuthentication no"
+    #     - "X11Forwarding no"
+    #     - "Protocol 2"
+
+    # - name: Restart SSH service
+    #   service:
+    #     name: ssh
+    #     state: restarted
+
+    # - name: log2ram
+    #   include_tasks: tasks/log2ram.yml
+    # - name: yt-dlp
+    #   include_tasks: tasks/yt-dlp.yml
+    # - name: vlc
+    #   include_tasks: tasks/vlc.yml
+    # - name: media-players
+    #   include_tasks: tasks/media-players.yml
+    # - name: sabnzbd
+    #   include_tasks: tasks/sabnzbd.yml
+    # - name: ssd_drive
+    #   include_tasks: tasks/ssd_drive.yml
+    # - name: plex
+    #   include_tasks: tasks/plex.yml
+
+    # - name: jellyfin
+    #   include_tasks: tasks/jellyfin.yml
+    - name: smb-mount
+      include_tasks: tasks/smb-mount.yml
+
+  handlers:
+    - name: Restart Jellyfin
       systemd:
-        name: "{{ item }}"
-        state: stopped
-        enabled: false
-      with_items:
-        - bluetooth
-        - avahi-daemon
-        - triggerhappy
-        - dphys-swapfile
-
-
-    # Privacy enhancements - Updated DNS configuration for NetworkManager
-    - name: Install NetworkManager
-      apt:
-        name: network-manager
-        state: present
-
-    - name: Configure DNS servers in NetworkManager
-      copy:
-        content: |
-          [main]
-          dns=none
-
-          [global-dns]
-          servers=1.1.1.1,8.8.8.8
-        dest: /etc/NetworkManager/conf.d/dns-servers.conf
-        mode: '0644'
-
-    - name: Restart NetworkManager
+        name: jellyfin
+        state: restarted
+    - name: Reload systemd
       systemd:
-        name: NetworkManager
-        state: restarted
-
-    # WiFi optimization for 5GHz
-    - name: Configure WiFi country and settings
-      copy:
-        content: |
-          [connection]
-          id=LO_BEHOLD_5G
-          type=wifi
-
-          [wifi]
-          band=a
-          mode=infrastructure
-          ssid=LO_BEHOLD_5G
-
-          [wifi-security]
-          key-mgmt=wpa-psk
-          psk=littlebrothers
-
-          [ipv4]
-          method=auto
-
-          [ipv6]
-          method=auto
-        dest: /etc/NetworkManager/system-connections/LO_BEHOLD_5G.nmconnection
-        mode: '0600'
-
-    # Performance optimizations
-    - name: Set CPU governor to performance
-      lineinfile:
-        path: /boot/config.txt
-        line: "force_turbo=1"
-
-    - name: Optimize SD card writes
-      blockinfile:
-        path: /etc/fstab
-        block: |
-          tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0
-          tmpfs /var/tmp tmpfs defaults,noatime,mode=1777 0 0
-          tmpfs /var/spool tmpfs defaults,noatime,mode=1777 0 0
-          tmpfs /var/log tmpfs defaults,noatime,mode=1777 0 0
-
-    - name: Configure system for reduced writes
-      sysctl:
-        name: "{{ item.key }}"
-        value: "{{ item.value }}"
-        state: present
-      with_items:
-        - { key: 'vm.swappiness', value: '10' }
-        - { key: 'vm.vfs_cache_pressure', value: '50' }
-        - { key: 'vm.dirty_background_ratio', value: '5' }
-        - { key: 'vm.dirty_ratio', value: '10' }
-
-    # Locale and timezone configuration
-    - name: Set timezone
-      timezone:
-        name: "{{ timezone }}"
-
-    - name: Generate locale
-      locale_gen:
-        name: en_US.UTF-8
-        state: present
-
-    # Security hardening
-    - name: Configure SSH hardening
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        line: "{{ item }}"
-      with_items:
-        - "PermitRootLogin no"
-        - "PasswordAuthentication no"
-        - "X11Forwarding no"
-        - "Protocol 2"
-
-    - name: Restart SSH service
-      service:
-        name: ssh
-        state: restarted
-
-    - name: log2ram
-      include_tasks: tasks/log2ram.yml
-    - name: yt-dlp
-      include_tasks: tasks/yt-dlp.yml
-    - name: vlc
-      include_tasks: tasks/vlc.yml
-    - name: media-players
-      include_tasks: tasks/media-players.yml
-    - name: sabnzbd
-      include_tasks: tasks/sabnzbd.yml
-    - name: ssd_drive
-      include_tasks: tasks/ssd_drive.yml
-    - name: plex
-      include_tasks: tasks/plex.yml
+        daemon_reload: yes

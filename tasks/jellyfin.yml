@@ -1,0 +1,157 @@
+    - name: Check if UFW is installed
+      package:
+        name: ufw
+        state: present
+      register: ufw_install
+      when: configure_firewall | bool
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg2
+        state: present
+        update_cache: yes
+
+    - name: Remove old Jellyfin repository files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/apt/sources.list.d/jellyfin.list
+        - /usr/share/keyrings/jellyfin-archive-keyring.gpg
+
+    - name: Download Jellyfin GPG key
+      get_url:
+        url: https://repo.jellyfin.org/jellyfin_team.gpg.key
+        dest: /tmp/jellyfin_team.gpg.key
+        mode: '0644'
+
+    - name: Import Jellyfin GPG key
+      shell: |
+        gpg --dearmor < /tmp/jellyfin_team.gpg.key > /usr/share/keyrings/jellyfin-archive-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/jellyfin-archive-keyring.gpg
+
+    - name: Add Jellyfin repository
+      apt_repository:
+        repo: "deb [arch=arm64 signed-by=/usr/share/keyrings/jellyfin-archive-keyring.gpg] https://repo.jellyfin.org/debian bookworm main"
+        state: present
+        filename: jellyfin
+        mode: '0644'
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Jellyfin
+      apt:
+        name: jellyfin
+        state: present
+
+    - name: Ensure external mount directory exists
+      file:
+        path: /mnt/external
+        state: directory
+        mode: '0755'
+
+    - name: Create Jellyfin directory structure
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ jellyfin_user }}"
+        group: "{{ jellyfin_group }}"
+        mode: '0755'
+      loop:
+        - "{{ base_dir }}"
+        - "{{ config_dir }}"
+        - "{{ media_dir }}"
+        - "{{ cache_dir }}"
+        - "{{ metadata_dir }}"
+        - "{{ transcoding_dir }}"
+
+    - name: Create systemd override directory
+      file:
+        path: "{{ systemd_override_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy Jellyfin configuration
+      copy:
+        content: |
+          <?xml version="1.0" encoding="utf-8"?>
+          <ServerConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <EnableTranscodingThrottling>false</EnableTranscodingThrottling>
+            <EnableThrottling>false</EnableThrottling>
+            <HardwareAccelerationType>None</HardwareAccelerationType>
+            <EncoderPreset>disabled</EncoderPreset>
+            <TranscodingTempPath>{{ transcoding_dir }}</TranscodingTempPath>
+            <MaxStreamingBitrate>2147483647</MaxStreamingBitrate>
+            <EnableVideoTranscoding>false</EnableVideoTranscoding>
+            <AllowHevcEncoding>false</AllowHevcEncoding>
+            <EnableDebugLevelLogging>false</EnableDebugLevelLogging>
+            <EnableAutoUpdate>true</EnableAutoUpdate>
+            <LogFileRetentionDays>3</LogFileRetentionDays>
+            <RunAtStartup>true</RunAtStartup>
+            <IsPortAuthorized>true</IsPortAuthorized>
+            <EnableUPnP>true</EnableUPnP>
+            <EnableRemoteAccess>true</EnableRemoteAccess>
+            <RequireHttps>false</RequireHttps>
+            <EnableCaseSensitiveItemIds>true</EnableCaseSensitiveItemIds>
+            <PreferredMetadataLanguage>en</PreferredMetadataLanguage>
+            <MetadataCountryCode>US</MetadataCountryCode>
+          </ServerConfiguration>
+        dest: "{{ config_file }}"
+        owner: "{{ jellyfin_user }}"
+        group: "{{ jellyfin_group }}"
+        mode: '0644'
+
+    - name: Update Jellyfin service configuration
+      copy:
+        dest: "{{ systemd_override_dir }}/override.conf"
+        content: |
+          [Service]
+          Environment="JELLYFIN_DATA_DIR={{ base_dir }}"
+          Environment="JELLYFIN_CONFIG_DIR={{ config_dir }}"
+          Environment="JELLYFIN_CACHE_DIR={{ cache_dir }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Jellyfin
+
+    - name: Recursively change ownership of external Jellyfin directory
+      file:
+        path: "{{ base_dir }}"
+        state: directory
+        recurse: yes
+        owner: "{{ jellyfin_user }}"
+        group: "{{ jellyfin_group }}"
+
+    - name: Enable and start Jellyfin service
+      systemd:
+        name: jellyfin
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Enable UFW
+      community.general.ufw:
+        state: enabled
+        policy: allow
+      when: configure_firewall | bool and ufw_install is success
+
+    - name: Allow Jellyfin through firewall
+      community.general.ufw:
+        rule: allow
+        port: '8096'
+        proto: tcp
+      when: configure_firewall | bool and ufw_install is success
+
+    - name: Allow Jellyfin HTTPS through firewall
+      community.general.ufw:
+        rule: allow
+        port: '8920'
+        proto: tcp
+      when: configure_firewall | bool and ufw_install is success

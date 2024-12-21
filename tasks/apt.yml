@@ -1,0 +1,10 @@
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600  # Consider cache valid for 1 hour
+
+    - name: Upgrade all apt packages
+      apt:
+        upgrade: yes
+        autoremove: yes  # Remove dependencies that are no longer needed
+        autoclean: yes   # Remove .deb files for packages that are no longer installed

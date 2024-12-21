@@ -1,0 +1,14 @@
+[Unit]
+Description=Shield SMB Mount
+Requires=network-online.target
+After=network-online.target
+Before=umount.target
+
+[Mount]
+What=//{{ smb_server }}/{{ smb_share }}
+Where={{ mount_point }}
+Type=cifs
+Options=credentials={{ credentials_path }},vers=3.0,_netdev
+
+[Install]
+WantedBy=multi-user.target

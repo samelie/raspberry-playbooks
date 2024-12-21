@@ -1,0 +1,34 @@
+    - name: Ensure mount point directory exists
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Install required packages
+      package:
+        name:
+          - cifs-utils
+          - samba-client
+        state: present
+
+    - name: Create credentials file
+      copy:
+        dest: "{{ credentials_path }}"
+        content: |
+          username={{ smb_username }}
+          password={{ smb_password }}
+        mode: '0600'
+
+    - name: Create systemd mount unit file
+      template:
+        src: templates/smb-mount.j2
+        dest: "/etc/systemd/system/{{ mount_unit_name }}"
+        mode: '0644'
+      notify: Reload systemd
+
+    - name: Enable and start the mount service
+      systemd:
+        name: "{{ mount_unit_name }}"
+        enabled: yes
+        state: started
+        daemon_reload: yes
