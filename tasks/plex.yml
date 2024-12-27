@@ -63,11 +63,3 @@
     path: "/tmp/plexmediaserver_{{ architecture }}.deb"
     state: absent
 
-- name: Create Plex media directories
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: plex
-    group: plex
-    mode: '0755'
-  with_items: "{{ media_directories }}"
