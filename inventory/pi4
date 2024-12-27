@@ -1,0 +1,14 @@
+[pis]
+
+192.168.50.38
+
+
+[temp]
+
+[pis:vars]
+ansible_ssh_user=pi
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[temp:vars]
+ansible_ssh_user=pi
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'

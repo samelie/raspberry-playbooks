@@ -8,6 +8,13 @@
   when: architecture != ansible_architecture
   changed_when: false
 
+- name: Check if Plex service exists
+  shell: systemctl list-units --full -all | grep -i "plex"
+  register: plex_service_check
+  changed_when: false
+  failed_when: false
+
+
 - name: Install required dependencies
   apt:
     name:
@@ -26,17 +33,24 @@
     mode: '0644'
   register: plex_download
 
+- name: Check Plex service name
+  shell: systemctl list-unit-files | grep -E '^plexmediaserver\.service'
+  register: plex_service_check
+  changed_when: false
+  failed_when: false
+
 - name: Stop Plex Media Server service before upgrade
   systemd:
     name: plexmediaserver
     state: stopped
-  when: plex_download.changed
+  when: plex_download.changed and plex_service_check.stdout != ""
 
-- name: Install/Update Plex Media Server
-  apt:
-    deb: "/tmp/plexmediaserver_{{ architecture }}.deb"
-    state: present
-  register: plex_install
+- name: Start Plex Media Server service
+  systemd:
+    name: plexmediaserver
+    state: started
+    enabled: yes
+  when: plex_service_check.stdout != ""
 
 - name: Start Plex Media Server service
   systemd:
